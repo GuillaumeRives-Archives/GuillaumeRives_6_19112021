@@ -1,5 +1,7 @@
+//Import des modules utilisés par ce schéma
 const mongoose = require("mongoose");
 
+//Schéma sauce
 const sauceSchema = mongoose.Schema({
     userId: {
         type: String,
@@ -47,4 +49,5 @@ const sauceSchema = mongoose.Schema({
     }
 });
 
+//Export du modèle
 module.exports = mongoose.model("sauce", sauceSchema);

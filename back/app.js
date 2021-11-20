@@ -1,4 +1,4 @@
-//Inclusion des variables pour la connexion à la BDD
+//Inclusion des variables d'environnement
 require("dotenv").config({
     path: "vars/.env"
 });
@@ -7,7 +7,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 
 //Inclusion des routes
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routers/auth");
 
 //Création de l'application
 const app = express();
@@ -34,7 +34,7 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-//Application des routes
+//Application des routes d'authentification
 app.use("/api/auth", authRoutes);
 
 module.exports = app;

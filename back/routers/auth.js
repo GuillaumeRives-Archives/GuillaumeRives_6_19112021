@@ -2,10 +2,12 @@
 const express = require("express");
 //Création du routeur
 const router = express.Router();
-//Import des controlleurs
+//Import du controlleur
 const authController = require("../controllers/auth");
 
 //Enregistrement d'un nouvel utilisateur
-router.post("/signup", authController.createUser);
+router.post("/signup", authController.signup);
+//Authentification d'un utilisateur
+router.post("/login", authController.login);
 
 module.exports = router;

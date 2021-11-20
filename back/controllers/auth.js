@@ -1,19 +1,28 @@
+//Inclusion des variables d'environnement
+require("dotenv").config({
+    path: "vars/.env"
+});
+
+//Inclusion des modules
 const User = require("../models/user");
-const bcrypt = require("bcrypt");
-const cryptojs = require("crypto-js");
+const Bcrypt = require("bcrypt");
+const Crypto = require("../utils/crypto");
+const Token = require("jsonwebtoken");
 
 //Paramétrage Bcrypt
 const saltRounds = 10;
 
-exports.createUser = (request, response, next) => {
+//Fonction appelée par la route signup
+exports.signup = (request, response, _next) => {
     //Création d'un objet utilisateur à partir de la requête reçue
     const user = new User({
         ...request.body
     });
     //Hachage de l'adresse email
-    user.email = cryptojs.SHA256(user.email).toString();
+    user.email = Crypto.sha256(user.email);
+
     //Hachage du mot de passe
-    bcrypt.hash(user.password, saltRounds).then(hash => {
+    Bcrypt.hash(user.password, saltRounds).then(hash => {
         user.password = hash;
         //Sauvegarde dans la base de données
         user.save().then(() => {
@@ -25,13 +34,53 @@ exports.createUser = (request, response, next) => {
             .catch(error => {
                 response.status(400).json({
                     message: "Cette adresse email est déjà utilisée !"
-                })
+                });
                 console.error(error);
             });
     }).catch(error => {
-        response.status(404).json({
-            message: error
-        })
+        response.status(500).json({
+            error
+        });
         console.error(error);
     })
 };
+
+//Fonction appelée par la route login
+exports.login = (request, response, _next) => {
+    User.findOne({
+        email: Crypto.sha256(request.body.email)
+    }).then(user => {
+        if (!user) {
+            return response.status(401).json({
+                message: "Utilisateur introuvable !"
+            })
+        }
+        Bcrypt.compare(request.body.password, user.password).then(valid => {
+            if (!valid) {
+                return response.status(401).json({
+                    message: "Mot de passe incorrect !"
+                });
+            }
+            response.status(200).json({
+                userId: user._id,
+                token: Token.sign({
+                        userId: user._id
+                    },
+                    process.env.SECRET, {
+                        expiresIn: process.env.EXPIRATION
+                    }
+                )
+            });
+        }).catch(error => {
+            response.status(500).json({
+                error
+            });
+            console.error(error);
+        });
+    }).catch(error => {
+        response.status(500).json({
+            error
+        });
+        console.error(error);
+    });
+}
