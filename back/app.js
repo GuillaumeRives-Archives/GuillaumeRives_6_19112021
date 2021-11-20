@@ -5,9 +5,11 @@ require("dotenv").config({
 //Inclusion des différents modules utiles à l'application
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
 
 //Inclusion des routes
 const authRoutes = require("./routers/auth");
+const saucesRoutes = require("./routers/sauce");
 
 //Création de l'application
 const app = express();
@@ -34,7 +36,12 @@ app.use(express.urlencoded({
     extended: true
 }));
 
+//Utilisation du dossier images
+app.use("/images", express.static(path.join(__dirname, "images")));
+
 //Application des routes d'authentification
 app.use("/api/auth", authRoutes);
+//Application des routes concernant les sauces
+app.use("/api/sauces", saucesRoutes);
 
 module.exports = app;

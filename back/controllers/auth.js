@@ -13,7 +13,7 @@ const Token = require("jsonwebtoken");
 const saltRounds = 10;
 
 //Fonction appelée par la route signup
-exports.signup = (request, response, _next) => {
+exports.signup = (request, response) => {
     //Création d'un objet utilisateur à partir de la requête reçue
     const user = new User({
         ...request.body
@@ -46,7 +46,7 @@ exports.signup = (request, response, _next) => {
 };
 
 //Fonction appelée par la route login
-exports.login = (request, response, _next) => {
+exports.login = (request, response) => {
     User.findOne({
         email: Crypto.sha256(request.body.email)
     }).then(user => {
