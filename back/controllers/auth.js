@@ -29,7 +29,6 @@ exports.signup = (request, response) => {
                 response.status(201).json({
                     message: "Utilisateur enregistré !"
                 })
-                console.log("Utilisateur enregistré !");
             })
             .catch(error => {
                 response.status(400).json({
@@ -38,9 +37,7 @@ exports.signup = (request, response) => {
                 console.error(error);
             });
     }).catch(error => {
-        response.status(500).json({
-            error
-        });
+        response.status(500).json(error);
         console.error(error);
     })
 };
@@ -60,6 +57,7 @@ exports.login = (request, response) => {
                 return response.status(401).json({
                     message: "Mot de passe incorrect !"
                 });
+                console.error("Mot de passe incorrect !");
             }
             response.status(200).json({
                 userId: user._id,
@@ -72,15 +70,11 @@ exports.login = (request, response) => {
                 )
             });
         }).catch(error => {
-            response.status(500).json({
-                error
-            });
+            response.status(500).json(error);
             console.error(error);
         });
     }).catch(error => {
-        response.status(500).json({
-            error
-        });
+        response.status(500).json(error);
         console.error(error);
     });
 }

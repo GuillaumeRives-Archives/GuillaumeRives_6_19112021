@@ -1,6 +1,7 @@
 //Inclusion des modules
 const Sauce = require("../models/sauce");
 const fileSystem = require("fs");
+const Arrays = require("../utils/removeFromArray");
 
 
 //Récupération de toutes les sauces
@@ -9,6 +10,7 @@ exports.getAllSauces = (_request, response) => {
         response.status(200).json(sauces);
     }).catch(error => {
         response.status(400).json(error);
+        console.error(error);
     });
 }
 
@@ -20,6 +22,7 @@ exports.getSauce = (request, response) => {
         response.status(200).json(sauce);
     }).catch(error => {
         response.status(404).json(error);
+        console.error(error);
     });
 }
 
@@ -41,6 +44,7 @@ exports.createSauce = (request, response) => {
         });
     }).catch(error => {
         response.status(500).json(error);
+        console.error(error);
     });
 }
 
@@ -59,11 +63,12 @@ exports.deleteSauce = (request, response) => {
                 });
             }).catch(error => {
                 response.status(500).JSON(error);
+                console.error(error);
             })
         });
     }).catch(error => {
         response.status(500).json(error);
-        console.log(error);
+        console.error(error);
     });
 }
 
@@ -86,5 +91,54 @@ exports.updateSauce = (request, response) => {
         });
     }).catch(error => {
         response.status(400).json(error);
+        console.error(error);
+    });
+}
+
+//Modification des likes
+exports.likeDislike = (request, response) => {
+    Sauce.findOne({
+        _id: request.params.id
+    }).then(sauce => {
+        let usersLiked = sauce.usersLiked;
+        let usersDisliked = sauce.usersDisliked;
+        let nbLikes = sauce.likes;
+        let nbDislikes = sauce.dislikes;
+        switch (request.body.like) {
+            case -1:
+                Arrays.removeFromArray(usersLiked, request.body.userId);
+                usersDisliked.push(request.body.userId);
+                nbLikes > 0 ? nbLikes = sauce.likes - 1 : nbLikes = 0;
+                nbDislikes = sauce.dislikes += 1;
+                break;
+            case 0:
+                Arrays.removeFromArray(usersLiked, request.body.userId);
+                Arrays.removeFromArray(usersDisliked, request.body.userId);
+                nbLikes > 0 ? nbLikes = sauce.likes - 1 : nbLikes = 0;
+                nbDislikes > 0 ? nbDislikes = sauce.dislikes - 1 : nbDislikes = 0;
+                break;
+            case 1:
+                Arrays.removeFromArray(usersDisliked, request.body.userId);
+                usersLiked.push(request.body.userId);
+                nbDislikes > 0 ? nbDislikes = sauce.dislikes - 1 : nbDislikes = 0;
+                nbLikes = sauce.likes += 1;
+                break;
+        }
+        const data = {
+            likes: nbLikes,
+            dislikes: nbDislikes,
+            usersLiked: usersLiked,
+            usersDisliked: usersDisliked
+        }
+        Sauce.updateOne({
+            _id: request.params.id
+        }, data).then(() => {
+            response.status(200).json({
+                message: "Modification des likes effectuée !"
+            });
+        }).catch(error => {
+            response.status(400).json(error);
+            console.error(error);
+        });
     });
 }
