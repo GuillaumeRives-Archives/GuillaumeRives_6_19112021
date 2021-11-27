@@ -7,7 +7,6 @@ const router = express.Router();
 
 //Import du controlleur
 const sauceController = require("../controllers/sauce");
-const sauce = require("../models/sauce");
 
 //Récupération de toutes les sauces
 router.get("", authorization, sauceController.getAllSauces);

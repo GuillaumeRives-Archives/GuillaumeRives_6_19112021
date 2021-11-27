@@ -74,24 +74,31 @@ exports.deleteSauce = (request, response) => {
 
 //Modification d'une sauce
 exports.updateSauce = (request, response) => {
-    const modifiedSauce = request.file ? {
-        ...JSON.parse(request.body.sauce),
-        imageUrl: `${request.protocol}://${request.get("host")}/images/${request.file.filename}`
-    } : {
-        ...request.body
-    }
-    Sauce.updateOne({
+    Sauce.findOne({
         _id: request.params.id
-    }, {
-        ...modifiedSauce,
-        _id: request.params.id
-    }).then(() => {
-        response.status(200).json({
-            message: "Sauce mise à jour avec succès !"
+    }).then(sauce => {
+        const image = sauce.imageUrl.split("/images/")[1];
+        fileSystem.unlink(`images/${image}`, () => {
+            const modifiedSauce = request.file ? {
+                ...JSON.parse(request.body.sauce),
+                imageUrl: `${request.protocol}://${request.get("host")}/images/${request.file.filename}`
+            } : {
+                ...request.body
+            }
+            Sauce.updateOne({
+                _id: request.params.id
+            }, {
+                ...modifiedSauce,
+                _id: request.params.id
+            }).then(() => {
+                response.status(200).json({
+                    message: "Sauce mise à jour avec succès !"
+                });
+            }).catch(error => {
+                response.status(400).json(error);
+                console.error(error);
+            });
         });
-    }).catch(error => {
-        response.status(400).json(error);
-        console.error(error);
     });
 }
 
@@ -108,20 +115,20 @@ exports.likeDislike = (request, response) => {
             case -1:
                 Arrays.removeFromArray(usersLiked, request.body.userId);
                 usersDisliked.push(request.body.userId);
-                nbLikes > 0 ? nbLikes = sauce.likes - 1 : nbLikes = 0;
-                nbDislikes = sauce.dislikes += 1;
+                nbDislikes += 1;
                 break;
             case 0:
-                Arrays.removeFromArray(usersLiked, request.body.userId);
-                Arrays.removeFromArray(usersDisliked, request.body.userId);
-                nbLikes > 0 ? nbLikes = sauce.likes - 1 : nbLikes = 0;
-                nbDislikes > 0 ? nbDislikes = sauce.dislikes - 1 : nbDislikes = 0;
+                if (Arrays.removeFromArray(usersLiked, request.body.userId)) {
+                    nbLikes -= 1;
+                } else {
+                    Arrays.removeFromArray(usersDisliked, request.body.userId)
+                    nbDislikes -= 1;
+                }
                 break;
             case 1:
                 Arrays.removeFromArray(usersDisliked, request.body.userId);
                 usersLiked.push(request.body.userId);
-                nbDislikes > 0 ? nbDislikes = sauce.dislikes - 1 : nbDislikes = 0;
-                nbLikes = sauce.likes += 1;
+                nbLikes += 1;
                 break;
         }
         const data = {
