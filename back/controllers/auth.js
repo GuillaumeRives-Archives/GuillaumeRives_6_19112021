@@ -5,7 +5,7 @@ require("dotenv").config({
 
 //Inclusion des modules
 const User = require("../models/user");
-const Bcrypt = require("bcrypt");
+const Bcrypt = require("bcryptjs");
 const Crypto = require("../utils/crypto");
 const Token = require("jsonwebtoken");
 
