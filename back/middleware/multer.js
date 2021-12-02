@@ -1,5 +1,6 @@
 //Import du module multer
 const multer = require("multer");
+const uuid = require("uuid");
 
 //Définition d'une collection de types d'images
 const MIME_TYPES = {
@@ -16,7 +17,7 @@ const storage = multer.diskStorage({
     filename: (request, file, callback) => {
         const name = file.originalname.split("").join("_");
         const extension = MIME_TYPES[file.mimetype];
-        callback(null, name + Date.now() + "." + extension);
+        callback(null, uuid.v4() + "." + extension);
     }
 });
 
